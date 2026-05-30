@@ -6,128 +6,44 @@ A proposta deve apresentar uma ideia simples, clara e viável para ser desenvolv
 
 ## 1. Nome provisório do jogo
 
-Escreva aqui o nome provisório do jogo.
-
-Exemplo:
-
-> Corrida dos Obstáculos
+> Beyond The Sky
 
 ## 2. Integrantes do grupo
 
 Liste os integrantes do grupo.
 
-- Nome 1:
-- Nome 2:
-- Nome 3:
-- Nome 4:
+- Nome 1: Emanuel Phillipe Ribeiro Ferreira Carvalho
+- Nome 2: Giovanna Marques Freire Barbosa
+- Nome 3: Caio Martins Caldeira
+- Nome 4: Pedro Miguel Souza Dias 
 
 ## 3. Tipo de jogo
 
-Indique o tipo de jogo que será desenvolvido.
-
-Exemplos:
-
-- jogo de desviar de obstáculos;
-- jogo de coleta de itens;
-- labirinto simples;
-- jogo de perguntas e respostas;
-- jogo de memória;
-- Pong;
-- Snake;
-- Breakout;
-- nave desviando de meteoros;
-- corrida simples com obstáculos;
-- jogo de clique rápido;
-- jogo de sobrevivência simples.
-
-Tipo escolhido pelo grupo:
-
-> Escreva aqui.
+> Jogo de desviar de obstáculos e escalar.
 
 ## 4. Descrição geral do jogo
 
-Explique, em poucas linhas, como o jogo funcionará.
-
-Procure responder:
-
-- O que aparece na tela?
-- O que o jogador controla?
-- O que o jogador precisa fazer?
-- Quais desafios aparecem durante a partida?
-
-Descrição:
-
-> Escreva aqui.
+> Em Beyond The Sky, o personagem tem uma única ação: pular de plataforma em plataforma. O personagem realiza pequenos “jumps/saltos”, e o jogador precisa mirar, usando o cursor do mouse, nas plataformas geradas acima dele. Os objetivos são: fazer com que o avatar sempre esteja no andar mais alto, não caia para as plataformas de baixo (perde pontos se ocorrer) e desvie dos obstáculos, aos quais se encostar perde-se 1/3 de vida. Caso este caia muitos andares de uma vez só, perde-se a partida. Com isso, estando mais alto do que na última tentativa, o jogador atinge um novo recorde de pontuação e vence em cima de suas partidas anteriores.
 
 ## 5. Objetivo do jogador
 
-Explique qual é o objetivo principal do jogador.
-
-Exemplos:
-
-- coletar o maior número possível de itens;
-- sobreviver pelo maior tempo possível;
-- chegar até o final do labirinto;
-- acertar alvos;
-- responder perguntas corretamente;
-- evitar obstáculos;
-- quebrar todos os blocos.
-
-Objetivo:
-
-> Escreva aqui.
+> O objetivo do jogador é manter o personagem no andar mais alto possível pulando de plataforma de plataforma, aumentando sua pontuação a cada um. Ademais, o jogador deve evitar cair para baixo de sua plataforma atual e desviar dos obstáculos que o fazem perder vidas (3 no total).
 
 ## 6. Regras principais
 
-Liste as principais regras do jogo.
-
-Exemplo:
-
-- O jogador começa com 3 vidas.
-- Cada moeda coletada vale 10 pontos.
-- Cada colisão com obstáculo remove 1 vida.
-- A partida termina quando as vidas chegam a zero.
-- O jogador vence se alcançar 100 pontos.
-
-Regras do grupo:
-
-- Regra 1:
-- Regra 2:
-- Regra 3:
-- Regra 4:
-- Regra 5:
+- Regra 1: O jogador se movimenta usando o cursor do mouse.
+- Regra 2: O jogador se movimenta usando pulo duplo, limitado a 2 vezes por partida.
+- Regra 3: O avatar tem 3 vidas e perde uma vida se colidir com um inimigo.
+- Regra 4: A cada altura alcançada irá aumentar a pontuação do avatar.
+- Regra 5: O avatar perde pontos se cair nas plataformas de baixo.
 
 ## 7. Condição de vitória
 
-Explique como o jogador vence ou conclui o jogo.
-
-Exemplos:
-
-- atingir determinada pontuação;
-- chegar ao final da fase;
-- sobreviver até o tempo acabar;
-- responder uma quantidade mínima de perguntas;
-- quebrar todos os blocos.
-
-Condição de vitória:
-
-> Escreva aqui.
+> O jogador vence a partida atual ao atingir um andar mais alto que o da última tentativa, implicando diretamente em sua pontuação. Ou seja, se o jogador atingir uma pontuação maior que a anterior, considera-se que este venceu.
 
 ## 8. Condição de derrota ou encerramento
 
-Explique como o jogador perde ou quando a partida termina.
-
-Exemplos:
-
-- perder todas as vidas;
-- acabar o tempo;
-- colidir com determinado obstáculo;
-- errar muitas perguntas;
-- deixar a bola cair, no caso de Breakout ou Pong.
-
-Condição de derrota ou encerramento:
-
-> Escreva aqui.
+> A partida termina quando o avatar perder todas as vidas (3) ou se o avatar cair de todas as plataformas.
 
 ## 9. Elementos previstos no jogo
 
@@ -135,68 +51,43 @@ Descreva os principais elementos que farão parte do jogo.
 
 ## Jogador ou elemento principal
 
-Exemplo:
-
-> Um personagem controlado pelas setas do teclado.
-
 Descrição:
 
-> Escreva aqui.
+> Um personagem que executa saltos a cada intervalo de tempo e é controlado por movimentos de mouse para a direita e à esquerda realizados pelo jogador.
 
 ## Obstáculos, inimigos ou desafios
 
-Exemplo:
-
-> Obstáculos aparecem em posições aleatórias e devem ser evitados.
-
 Descrição:
 
-> Escreva aqui.
+### Obstáculos
+
+> Os obstáculos são balões aos quais o jogador deve desviar. Estes são gerados em posições aleatórias acima do avatar e mantidos no mesmo local ao passar por eles.
+
+### Desafios
+
+> Como desafio, o jogador deve evitar ao máximo encostar nos balões gerados, uma vez que, cada vez que comete este deslize, uma vida, de no máximo 3, é perdida. 
+> Além disso, o jogador deve evitar que o avatar “despenque” para os andares/plataformas abaixo, pois, se este cair muitos andares de uma vez só, ele perde automaticamente. Há também o risco de um balão ser encostado pelo avatar durante a queda.
 
 ## Itens, alvos ou objetos de interação
 
-Exemplo:
-
-> Moedas aparecem na tela e aumentam a pontuação quando coletadas.
-
-Descrição:
-
-> Escreva aqui.
+- Balões: Objetos gerados em posições aleatórias aos quais o avatar não pode encostar mais de 2 vezes, uma vez que, na 3ª, a partida é automaticamente encerrada.
 
 ## Pontuação, vidas, tempo ou progresso
 
-Exemplo:
-
-> O jogador começa com 3 vidas e ganha 10 pontos por item coletado.
-
-Descrição:
-
-> Escreva aqui.
+> O jogador inicia a partida com 3 vidas (corações), 0 pontos e 2 pulos duplos usáveis. A cada plataforma que subir, adicionam-se +20 pontos à contagem atual. Em uma emergência, o jogador pode acionar 1 pulo duplo pressionando ESPAÇO caso ainda não tenha os gasto.
 
 ## 10. Controles previstos
 
-Informe os comandos que serão utilizados pelo jogador.
-
-Exemplo:
-
-- Seta para cima: mover para cima
-- Seta para baixo: mover para baixo
-- Seta para esquerda: mover para esquerda
-- Seta para direita: mover para direita
-- Espaço: realizar ação
-- ESC: sair do jogo
+- **MOUSE para a esquerda:** Movimenta o personagem para a esquerda.
+- **MOUSE para a direita:** Movimenta o personagem para a direita.
+- **Tecla ESC:** Pausa a partida atual.
+- **Tecla SPACE:** Personagem aciona um pulo duplo.
 
 Controles do grupo:
 
-- Tecla/comando:
-- Tecla/comando:
-- Tecla/comando:
+- **Tecla R:** A partida perdida é iniciada novamente do local de perda a fim de testes.
 
 ## 11. Organização inicial do código
-
-Explique como o grupo pretende organizar o código.
-
-Exemplo:
 
 - `main.py`: inicia o jogo;
 - `src/jogo.py`: contém o loop principal;
@@ -206,48 +97,27 @@ Exemplo:
 
 Organização planejada:
 
-> Escreva aqui.
-
+> O grupo iniciará em um primeiro momento com o desenvolvimento da interface inicial do jogo, onde vê-se a pontuação máxima que o jogador já atingiu e os botões para iniciar uma nova partida e sair do jogo (fechá-lo). 
+> Seguindo este ponto, terá o início da construção da interface da partida em si com uma dinâmica de geração gradual das plataformas acima do avatar. Ademais, a contagem de pontos ao decorrer da subida e o pulo duplo também serão desenvolvidos.
+> Em um terceiro momento, tem-se o desenvolvimento da geração com posições aleatórias dos balões. do esquema de perda de vida ao avatar encostar neles e o limite de 2 balões “encostáveis”. Junto a isso, há a construção do algoritmo responsável por medir a quantidade de plataformas que o avatar caiu para determinar o encerramento da partida ou não.
 
 ## 12. Recursos externos previstos
 
 Informe se o grupo pretende utilizar imagens, sons, fontes, tutoriais ou códigos externos.
 
-Exemplo:
-
-- imagens obtidas de banco gratuito;
-- sons gratuitos;
-- tutorial usado apenas como referência;
-- fonte personalizada.
-
 Recursos previstos:
 
-> Escreva aqui.
-
-Caso não pretenda utilizar recursos externos, escreva:
-
-> Não pretendemos utilizar recursos externos.
+- Tutorial usado apenas como referência.
+- Sons gratuitos.
+- Imagens obtidas de banco gratuito.
 
 ## 13. Principais dificuldades esperadas
 
 Liste as dificuldades que o grupo acredita que poderá enfrentar.
 
-Exemplos:
-
-- movimentação do jogador;
-- colisão entre objetos;
-- controle de tempo;
-- criação do ranking;
-- organização do código;
-- uso do GitHub;
-- testes;
-- exibição de textos na tela.
-
-Dificuldades previstas:
-
-- Dificuldade 1:
-- Dificuldade 2:
-- Dificuldade 3:
+- Dificuldade 1: Geração gradual das plataformas e obstáculos.
+- Dificuldade 2: Colisão entre avatar e obstáculos.
+- Dificuldade 3: Movimentação do avatar.
 
 ## 14. Escopo mínimo para a entrega final
 
@@ -255,32 +125,18 @@ Descreva qual será a versão mínima aceitável do jogo.
 
 Esta seção é importante para evitar que o grupo escolha uma ideia grande demais.
 
-Exemplo:
-
-> A versão mínima do jogo terá um personagem controlado pelo teclado, obstáculos aparecendo na tela, sistema de vidas, sistema de pontuação e tela de fim de jogo.
-
 Escopo mínimo:
 
-> Escreva aqui.
+> A versão mínima do jogo terá um personagem controlado pelo mouse do jogador, apresentando: 
+> Plataformas geradas em posições aleatórias acima da posição do avatar; obstáculos gerados em posições aleatórias acima da posição do avatar e fixados lá até o momento da perda; pontuação a cada andar alcançado; salvamento da maior pontuação que o usuário atingir; esquema de 3 vidas por partida.
 
 ## 15. Possíveis melhorias, caso haja tempo
 
 Liste funcionalidades extras que o grupo poderá implementar se conseguir concluir o escopo mínimo.
 
-Exemplos:
-
-- tela inicial;
-- sons;
-- fases;
-- aumento de dificuldade;
-- ranking;
-- animações;
-- novos tipos de obstáculos;
-- diferentes personagens;
-- menu de pausa.
-
 Melhorias possíveis:
 
-- Melhoria 1:
-- Melhoria 2:
-- Melhoria 3:
+- Melhoria 1: Novos tipos de obstáculos;
+- Melhoria 2: Novos planos de fundo para as partidas;
+- Melhoria 3: Aumento de dificuldade a cada nova pontuação máxima alcançada;
+- Melhoria 4: Esquema de reviver em casos de perda gastando um possível tipo de moeda.
