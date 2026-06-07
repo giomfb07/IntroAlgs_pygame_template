@@ -14,8 +14,7 @@ Liste os integrantes do grupo.
 
 - Nome 1: Emanuel Phillipe Ribeiro Ferreira Carvalho
 - Nome 2: Giovanna Marques Freire Barbosa
-- Nome 3: Caio Martins Caldeira
-- Nome 4: Pedro Miguel Souza Dias 
+- Nome 3: Pedro Miguel Souza Dias 
 
 ## 3. Tipo de jogo
 

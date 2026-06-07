@@ -8,7 +8,6 @@ Este repositório é um template para os grupos da disciplina. A proposta é com
 
 - Emanuel Phillipe Ribeiro Ferreira Carvalho
 - Giovanna Marques Freire Barbosa
-- Caio Martins Caldeira
 - Pedro Miguel Souza Dias 
 
 ## Estrutura do projeto

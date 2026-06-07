@@ -1,3 +1,5 @@
+#jogo.py
+
 import pygame
 
 from src.config import (
@@ -62,8 +64,17 @@ def executar_jogo():
         "imagem": bat_image,
         "rect": bat_image.get_rect(topleft=(200, 500))
     }
+    plataforma = pygame.Rect(
+        250,
+        500,
+        250,
+        20
+    )
+    
 
     velocidade = 5
+    vel_y = 0
+    gravidade = 0.5
     pontos = 0
     vidas = 3
     recorde = carregar_recorde(CAMINHO_RECORDE)
@@ -77,20 +88,24 @@ def executar_jogo():
                 rodando = False
 
         teclas = pygame.key.get_pressed()
+        vel_y += gravidade
+        jogador["rect"].y += vel_y
+        
+        if jogador["rect"].colliderect(plataforma):
+
+            if vel_y > 0:
+                jogador["rect"].bottom = plataforma.top
+                vel_y = -12
 
         # Movimentação alterando direto os eixos X e Y do retângulo do jogador
         if teclas[pygame.K_LEFT]:
             jogador["rect"].x -= velocidade
         if teclas[pygame.K_RIGHT]:
             jogador["rect"].x += velocidade
-        if teclas[pygame.K_UP]:
-            jogador["rect"].y -= velocidade
-        if teclas[pygame.K_DOWN]:
-            jogador["rect"].y += velocidade
+      
 
         # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
         jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
-        jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
 
         # Verificação de colisão com a Gema (antigo 'item')
         if verificar_colisao(jogador["rect"], gema["rect"]):
@@ -123,6 +138,9 @@ def executar_jogo():
         if jogador_perdeu(vidas):
             rodando = False
 
+        if jogador["rect"].top > ALTURA_TELA:
+            rodando = False
+
         if pontos > recorde:
             recorde = pontos
             salvar_recorde(CAMINHO_RECORDE, recorde)
@@ -133,10 +151,26 @@ def executar_jogo():
 
         tela.fill(CINZA)
 
+        fonte = pygame.font.Font(None, 36)
+
+        texto = fonte.render(
+            f"Pontos: {pontos} | Vidas: {vidas}",
+            True,
+            (0, 0, 0)
+        )
+
+        tela.blit(texto, (10, 10))
+
         # Desenhando os elementos na tela passando a imagem e o rect de cada dicionário
         tela.blit(gema["imagem"], gema["rect"])
         tela.blit(inimigo["imagem"], inimigo["rect"])
         tela.blit(jogador["imagem"], jogador["rect"])
+        
+        pygame.draw.rect(
+            tela,
+            (0, 0, 0),
+            plataforma
+        )
 
         pygame.display.flip()
 
