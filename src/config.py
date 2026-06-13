@@ -1,13 +1,35 @@
-# Configurações centrais do jogo (tela, cores e caminhos de arquivos).
+# Configuracoes centrais do jogo.
 LARGURA_TELA = 800
 ALTURA_TELA = 600
 FPS = 60
 
-TITULO_JOGO = "Projeto Final - Pygame"
+TITULO_JOGO = "Beyond The Stars"
 
 BRANCO = (255, 255, 255)
 PRETO = (0, 0, 0)
-CINZA = (212,212,212)
+CINZA = (212, 212, 212)
+AZUL_ESCURO = (12, 18, 38)
+AZUL_MEDIO = (38, 72, 128)
+AMARELO = (246, 215, 92)
+VERDE = (72, 176, 114)
+VERMELHO = (212, 78, 78)
+ROXO = (120, 86, 180)
 
 CAMINHO_RECORDE = "data/recorde.txt"
+CAMINHO_RANKING = "data/ranking.txt"
 CAMINHO_SPRITES = "assets/imagens/spritesheet.bmp"
+
+VIDAS_INICIAIS = 3
+PULOS_DUPLOS_INICIAIS = 2
+PONTOS_POR_ANDAR = 20
+PENALIDADE_QUEDA = 10
+ANDAR_FINAL = 1000
+LIMITE_QUEDA_FATAL = 5
+
+GRAVIDADE = 0.40
+IMPULSO_PULO = -12
+IMPULSO_PULO_DUPLO = -15
+VELOCIDADE_HORIZONTAL = 10
+ESPACO_PLATAFORMAS = 86
+LARGURA_PLATAFORMA = 145
+ALTURA_PLATAFORMA = 18
