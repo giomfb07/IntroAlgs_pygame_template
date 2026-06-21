@@ -81,6 +81,8 @@ Descrição:
 - **MOUSE para a direita:** Movimenta o personagem para a direita.
 - **Tecla ESC:** Pausa a partida atual.
 - **Tecla SPACE:** Personagem aciona um pulo duplo.
+- **Tecla ENTER:** Começar partida.
+- **Tecla Q:** Sair do jogo.
 
 Controles do grupo:
 
@@ -107,8 +109,7 @@ Informe se o grupo pretende utilizar imagens, sons, fontes, tutoriais ou código
 Recursos previstos:
 
 - Tutorial usado apenas como referência.
-- Sons gratuitos.
-- Imagens obtidas de banco gratuito.
+- Imagens obtidas de banco gratuito (Site: Open Game Art).
 
 ## 13. Principais dificuldades esperadas
 

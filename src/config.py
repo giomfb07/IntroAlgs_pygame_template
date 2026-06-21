@@ -21,7 +21,7 @@ CAMINHO_SPRITES = "assets/imagens/Slime1_Run_body.png"
 CAMINHO_ESTRELA = "assets/imagens/Magical_rainbow_star.png"
 
 VIDAS_INICIAIS = 3
-PULOS_DUPLOS_INICIAIS = 2
+PULOS_DUPLOS_INICIAIS =  2
 PONTOS_POR_ANDAR = 20
 PENALIDADE_QUEDA = 10
 ANDAR_FINAL = 200

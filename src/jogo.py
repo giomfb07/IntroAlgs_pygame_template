@@ -4,6 +4,7 @@ import pygame
 
 import os
 
+# Importa constantes e configurações do jogo
 from src.config import (
     ALTURA_PLATAFORMA,
     ALTURA_TELA,
@@ -36,12 +37,14 @@ from src.config import (
     VIDAS_INICIAIS,
     obter_fase,
 )
+# Importa funções responsáveis por salvar e carregar dados
 from src.dados import (
     atualizar_recorde,
     carregar_ranking,
     carregar_recorde,
     salvar_resultado_ranking,
 )
+# Importa funções auxiliares da lógica do jogo
 from src.funcoes import (
     calcular_pontos,
     calcular_pontos_por_andar,
@@ -54,20 +57,25 @@ from src.funcoes import (
     tomar_dano,
     verificar_colisao,
 )
+# Importa função para capturar sprites 
 from src.sprites import pegar_sprite
 
 
 def desenhar_texto(tela, fonte, texto, x, y, cor=BRANCO, centro=False):
+    # Converte o texto em uma superfície gráfica
     superficie = fonte.render(texto, True, cor)
+    # Obtém o retângulo que envolve o texto
     rect = superficie.get_rect()
+
     if centro:
         rect.center = (x, y)
     else:
         rect.topleft = (x, y)
+    # Desenha o texto na tela
     tela.blit(superficie, rect)
     return rect
 
-
+ # Cria uma superfície transparente e desenha uma forma simples para representar o sprite
 def criar_sprite_fallback(largura, altura, cor):
     imagem = pygame.Surface((largura, altura), pygame.SRCALPHA)
     pygame.draw.ellipse(imagem, cor, imagem.get_rect())
@@ -77,24 +85,24 @@ def criar_sprite_fallback(largura, altura, cor):
 def carregar_imagens():
     try:
        
-        quadro_parado = pegar_sprite(CAMINHO_SPRITES, x=10, y=0, width=50, height=50, scale=2.5)
+        quadro_parado = pegar_sprite(CAMINHO_SPRITES, x=10, y=0, width=50, height=50, scale=.5)
         quadro_subindo = pegar_sprite(CAMINHO_SPRITES, x=80, y=0, width=50, height=50, scale=2.5)  
         quadro_descendo = pegar_sprite(CAMINHO_SPRITES, x=180, y=0, width=50, height=50, scale=2.5)
         
         sprites_jogador = [quadro_parado, quadro_subindo, quadro_descendo]
 
-        gema = pegar_sprite(CAMINHO_ESTRELA, x=10, y=40, width=250, height=210, scale=0.2)
+        estrela = pegar_sprite(CAMINHO_ESTRELA, x=10, y=40, width=250, height=210, scale=0.2)
 
     except pygame.error:
         sprites_jogador = [criar_sprite_fallback(70, 70, VERDE) for _ in range(3)]
-        gema = criar_sprite_fallback(32, 32, AMARELO)
+        estrela = criar_sprite_fallback(32, 32, AMARELO)
 
     balao = pygame.Surface((44, 58), pygame.SRCALPHA)
     pygame.draw.ellipse(balao, VERMELHO, (4, 0, 36, 44))
     pygame.draw.polygon(balao, VERMELHO, [(20, 43), (25, 43), (22, 50)])
     pygame.draw.line(balao, BRANCO, (22, 50), (22, 58), 2)
 
-    return {"jogador": sprites_jogador, "gema": gema, "balao": balao}
+    return {"jogador": sprites_jogador, "estrela": estrela, "balao": balao}
 
 
 def carregar_fundos():
@@ -113,18 +121,25 @@ def carregar_fundos():
             fundos[fase['nome']] = None
     return fundos
 
+
+
 def criar_estrelas(quantidade=80):
     estrelas = []
     for _ in range(quantidade):
         estrelas.append(
             {
+                # Posição aleatória
                 "x": random.randrange(0, LARGURA_TELA),
                 "y": random.randrange(0, ALTURA_TELA),
+                # Tamanho da estrela
                 "raio": random.choice([1, 1, 2]),
+                # Velocidade de descida
                 "velocidade": random.uniform(0.15, 0.45),
             }
         )
     return estrelas
+
+
 
 
 def desenhar_fundo(tela, fundos, config_fase, estrelas=None):
@@ -133,6 +148,7 @@ def desenhar_fundo(tela, fundos, config_fase, estrelas=None):
     imagem = fundos.get(nome_fase)
 
     if imagem is not None:
+        # Desenha a imagem
         tela.blit(imagem, (0, 0))
    
         if estrelas:
@@ -141,8 +157,10 @@ def desenhar_fundo(tela, fundos, config_fase, estrelas=None):
                 if estrela["y"] > ALTURA_TELA:
                     estrela["x"] = random.randrange(0, LARGURA_TELA)
                     estrela["y"] = 0
+                # Desenha a estrela
                 pygame.draw.circle(tela, (255,255,255,100), (int(estrela["x"]), int(estrela["y"])), estrela["raio"])
     else:
+        # Usa cor sólida 
         tela.fill(config_fase['cor_fundo'])
         if estrelas:
             for estrela in estrelas:
@@ -150,13 +168,16 @@ def desenhar_fundo(tela, fundos, config_fase, estrelas=None):
                 if estrela["y"] > ALTURA_TELA:
                     estrela["x"] = random.randrange(0, LARGURA_TELA)
                     estrela["y"] = 0
+                # Desenha a estrela
                 pygame.draw.circle(tela, BRANCO, (int(estrela["x"]), int(estrela["y"])), estrela["raio"])
 
 
 
 def criar_plataforma(andar, y, x=None):
+    # Gera uma posição aleatória para a plataforma
     if x is None:
         x = random.randrange(24, LARGURA_TELA - LARGURA_PLATAFORMA - 24)
+
     return {
         "rect": pygame.Rect(x, y, LARGURA_PLATAFORMA, ALTURA_PLATAFORMA),
         "andar": andar,
@@ -167,17 +188,23 @@ def criar_plataforma(andar, y, x=None):
 def criar_partida(imagens):
     plataformas = []
     obstaculos = []
-    gemas = []
+    estrelas = []
 
+    # Cria as primeiras plataformas do jogo
     for andar in range(9):
+        # Calcula a posição vertical da plataforma
         y = ALTURA_TELA - 70 - andar * ESPACO_PLATAFORMAS
+        # Primeira plataforma fica centralizada
         x = (LARGURA_TELA - LARGURA_PLATAFORMA) // 2 if andar == 0 else None
         plataformas.append(criar_plataforma(andar, y, x))
 
     sprite_parado = imagens["jogador"][0]
+    # Cria retângulo de colisão do jogador
     jogador_rect = sprite_parado.get_rect()
+    # Posiciona o jogador sobre a primeira plataforma
     jogador_rect.midbottom = plataformas[0]["rect"].midtop
 
+    # Retorna toda a estrutura da partida
     return {
         "jogador": {
            "sprites": imagens["jogador"],    
@@ -191,7 +218,7 @@ def criar_partida(imagens):
         },
         "plataformas": plataformas,
         "obstaculos": obstaculos,
-        "gemas": gemas,
+        "estrelas": estrelas,
         "pontos": 0,
         "vidas": VIDAS_INICIAIS,
         "pulos_duplos": PULOS_DUPLOS_INICIAIS,
@@ -216,47 +243,57 @@ def gerar_elementos_acima(partida, imagens):
     maior_andar = max(plataforma["andar"] for plataforma in plataformas)
     config = partida["config_fase"]
 
+    # Continua gerando até preencher o topo
     while top_y > -120:
         maior_andar += 1
         top_y -= ESPACO_PLATAFORMAS
+        # Cria nova plataforma
         plataforma = criar_plataforma(maior_andar, top_y)
         plataformas.append(plataforma)
 
+        # Chance de obstáculo
         chance_base = config['chance_obstaculo_base']
         chance = min(chance_base + maior_andar * 0.004, 0.45)
 
+        # Criação de balões e estrelas
         if maior_andar > 2 and random.random() < chance:
             rect = imagens["balao"].get_rect()
             rect.x = random.randrange(30, LARGURA_TELA - rect.width - 30)
             rect.y = plataforma["rect"].y - random.randrange(42, 72)
             partida["obstaculos"].append({"rect": rect, "andar": maior_andar, "ativo": True})
-
         if maior_andar > 1 and random.random() < 0.28:
-            rect = imagens["gema"].get_rect()
+            rect = imagens["estrela"].get_rect()
             rect.centerx = plataforma["rect"].centerx
             rect.bottom = plataforma["rect"].top - 12
-            partida["gemas"].append({"rect": rect, "coletada": False})
+            partida["estrelas"].append({"rect": rect, "coletada": False})
 
 
 def remover_elementos_fora_da_tela(partida):
+    # Mantém apenas plataformas visíveis
     partida["plataformas"] = [
         plataforma for plataforma in partida["plataformas"] if plataforma["rect"].top < ALTURA_TELA + 90
     ]
+    # Mantém apenas obstáculos visíveis
     partida["obstaculos"] = [
         obstaculo for obstaculo in partida["obstaculos"] if obstaculo["rect"].top < ALTURA_TELA + 90
     ]
-    partida["gemas"] = [gema for gema in partida["gemas"] if gema["rect"].top < ALTURA_TELA + 90]
+    # Mantém apenas estrelas visíveis
+    partida["estrelas"] = [estrela for estrela in partida["estrelas"] if estrela["rect"].top < ALTURA_TELA + 90]
 
 
 def mover_cenario(partida, deslocamento):
-    for colecao in ("plataformas", "obstaculos", "gemas"):
+    for colecao in ("plataformas", "obstaculos", "estrelas"):
         for item in partida[colecao]:
+            # Move verticalmente cada item para sensação de subida
             item["rect"].y += deslocamento
 
 
 def finalizar_partida(partida, status, mensagem, recorde):
+    # Verifica se o resultado já foi salvo
     if not partida["resultado_salvo"]:
+        # Atualiza o recorde
         recorde = atualizar_recorde(CAMINHO_RECORDE, partida["pontos"])
+        # Salva no ranking
         salvar_resultado_ranking(CAMINHO_RANKING, "Jogador", partida["pontos"], status)
         partida["resultado_salvo"] = True
 
@@ -269,7 +306,9 @@ def atualizar_partida(partida, imagens, teclas):
     rect = jogador["rect"]
     config = partida["config_fase"]
 
+    # Obtém a posição horizontal do mouse
     mouse_x = pygame.mouse.get_pos()[0]
+    # Define o ponto que o jogador deve seguir com o mouse
     alvo_x = mouse_x - rect.width / 2
     vel_h = config['vel_horizontal']
 
@@ -282,6 +321,7 @@ def atualizar_partida(partida, imagens, teclas):
         passo = limitar_valor(diferenca, -vel_h, vel_h)
         jogador["x"] += passo
 
+    # Impede que o jogador saia da tela horizontalmente
     jogador["x"] = limitar_valor(jogador["x"], 0, LARGURA_TELA - rect.width)
     rect.x = int(jogador["x"])
 
@@ -297,6 +337,7 @@ def atualizar_partida(partida, imagens, teclas):
 
     for plataforma in partida["plataformas"]:
         plataforma_rect = plataforma["rect"]
+        # Verifica se o jogador pousou na plataforma
         pousou = (
             jogador["vel_y"] > 0
             and fundo_anterior <= plataforma_rect.top
@@ -304,7 +345,8 @@ def atualizar_partida(partida, imagens, teclas):
         )
         if not pousou:
             continue
-
+        
+        # Posiciona o jogador exatamente sobre a plataforma
         rect.bottom = plataforma_rect.top
         jogador["y"] = float(rect.y)
         jogador["vel_y"] = IMPULSO_PULO
@@ -312,6 +354,7 @@ def atualizar_partida(partida, imagens, teclas):
 
         andar = plataforma["andar"]
         if andar > partida["maior_andar"]:
+            # Adiciona pontos pelos andares conquistados
             partida["pontos"] = calcular_pontos_por_andar(
                 partida["pontos"],
                 andar,
@@ -320,6 +363,7 @@ def atualizar_partida(partida, imagens, teclas):
             )
             partida["maior_andar"] = andar
 
+            # Verifica se mudou de fase
             nova_fase = obter_fase(andar)
             if nova_fase != config:
                 partida["config_fase"] = nova_fase
@@ -329,6 +373,7 @@ def atualizar_partida(partida, imagens, teclas):
                 partida["transicao"]["nome"] = nova_fase['nome']
 
         elif andar < partida["andar_atual"]:
+            # Aplica penalidade por queda
             partida["pontos"] = penalizar_queda(
                 partida["pontos"],
                 partida["andar_atual"],
@@ -342,6 +387,7 @@ def atualizar_partida(partida, imagens, teclas):
 
     if rect.top < ALTURA_TELA * 0.34 and jogador["vel_y"] < 0:
         deslocamento = int(ALTURA_TELA * 0.34 - rect.top)
+        # Mantém jogador na mesma região da tela
         rect.y += deslocamento
         jogador["y"] = float(rect.y)
         mover_cenario(partida, deslocamento)
@@ -355,22 +401,30 @@ def atualizar_partida(partida, imagens, teclas):
     else:
         jogador["indice_sprite"] = 0           
 
-    for gema in partida["gemas"]:
-        if not gema["coletada"] and verificar_colisao(rect, gema["rect"]):
-            gema["coletada"] = True
+    for estrela in partida["estrelas"]:
+        if not estrela["coletada"] and verificar_colisao(rect, estrela["rect"]):
+            # Marca estrela como coletada
+            estrela["coletada"] = True
+            # Adiciona pontos
             partida["pontos"] = calcular_pontos(partida["pontos"], 10)
 
+    # Verifica colisão com obstáculos
     for obstaculo in partida["obstaculos"]:
+        # Ignora obstáculos inativos
         if not obstaculo["ativo"] or jogador["invulneravel"] > 0:
             continue
+        # Detecta colisão
         if verificar_colisao(rect, obstaculo["rect"]):
             obstaculo["ativo"] = False
             jogador["invulneravel"] = FPS
+            # Remove uma vida
             partida["vidas"] = tomar_dano(partida["vidas"], 1)
 
+    # Gera novas plataformas, estrelas e obstáculos acima
     gerar_elementos_acima(partida, imagens)
     remover_elementos_fora_da_tela(partida)
 
+    # Atualiza animação de transição entre fases
     if partida["transicao"]["ativa"]:
         partida["transicao"]["timer"] -= 1
         if partida["transicao"]["timer"] <= 0:
@@ -385,9 +439,9 @@ def desenhar_partida(tela, fontes, partida, imagens, recorde, fundos, estrelas):
         pygame.draw.rect(tela, cor, plataforma["rect"], border_radius=7)
         pygame.draw.rect(tela, BRANCO, plataforma["rect"], 1, border_radius=7)
 
-    for gema in partida["gemas"]:
-        if not gema["coletada"]:
-            tela.blit(imagens["gema"], gema["rect"])
+    for estrela in partida["estrelas"]:
+        if not estrela["coletada"]:
+            tela.blit(imagens["estrela"], estrela["rect"])
 
     for obstaculo in partida["obstaculos"]:
         if obstaculo["ativo"]:
@@ -415,9 +469,12 @@ def desenhar_partida(tela, fontes, partida, imagens, recorde, fundos, estrelas):
         desenhar_texto(tela, fontes["titulo"], nome, LARGURA_TELA//2, ALTURA_TELA//2 - 50, AMARELO, centro=True)
         desenhar_texto(tela, fontes["media"], "Nova fase!", LARGURA_TELA//2, ALTURA_TELA//2 + 20, BRANCO, centro=True)
 
+
+
 def desenhar_menu(tela, fontes, recorde, ranking, fundos, estrelas):
     desenhar_fundo(tela, fundos, FASES[0], estrelas)
 
+    # Cria camada escura transparente
     overlay = pygame.Surface((LARGURA_TELA, ALTURA_TELA), pygame.SRCALPHA)
     overlay.fill((40, 40, 40, 170))  
     tela.blit(overlay, (0, 0))
@@ -439,6 +496,7 @@ def desenhar_menu(tela, fontes, recorde, ranking, fundos, estrelas):
     if not ranking:
         desenhar_texto(tela, fontes["pequena"], "Nenhuma partida registrada ainda.", LARGURA_TELA // 2, 380, BRANCO, centro=True)
     else:
+        # Mostra os melhores jogadores
         for indice, item in enumerate(ranking, start=1):
             linha = f"{indice}. {item['nome']} - {item['pontuacao']} pts - {item['status']}"
             desenhar_texto(tela, fontes["pequena"], linha, LARGURA_TELA // 2, 368 + indice * 28, BRANCO, centro=True)
@@ -466,8 +524,10 @@ def desenhar_fim(tela, fontes, partida, recorde, ranking, fundos, estrelas):
 
 
 def executar_jogo():
+    # Inicializa todos os módulos do pygame
     pygame.init()
 
+    # Cria janela principal
     tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
     pygame.display.set_caption(TITULO_JOGO)
 
@@ -488,7 +548,9 @@ def executar_jogo():
     rodando = True
 
     while rodando:
+        # Limita FPS
         relogio.tick(FPS)
+        # Obtém teclas pressionadas
         teclas = pygame.key.get_pressed()
 
         for evento in pygame.event.get():
@@ -558,7 +620,8 @@ def executar_jogo():
             desenhar_pausa(tela, fontes)
         elif estado == "fim":
             desenhar_fim(tela, fontes, partida, recorde, ranking, fundos, estrelas)
-
+    
+        # Atualiza tela
         pygame.display.flip()
 
     pygame.quit()
