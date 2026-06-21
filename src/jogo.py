@@ -2,6 +2,8 @@ import random
 
 import pygame
 
+import os
+
 from src.config import (
     ALTURA_PLATAFORMA,
     ALTURA_TELA,
@@ -13,7 +15,9 @@ from src.config import (
     CAMINHO_RANKING,
     CAMINHO_RECORDE,
     CAMINHO_SPRITES,
+    CAMINHO_ESTRELA,
     ESPACO_PLATAFORMAS,
+    FASES,
     FPS,
     GRAVIDADE,
     IMPULSO_PULO,
@@ -30,6 +34,7 @@ from src.config import (
     VERDE,
     VERMELHO,
     VIDAS_INICIAIS,
+    obter_fase,
 )
 from src.dados import (
     atualizar_recorde,
@@ -71,10 +76,17 @@ def criar_sprite_fallback(largura, altura, cor):
 
 def carregar_imagens():
     try:
-        jogador = pegar_sprite(CAMINHO_SPRITES, x=110, y=120, width=190, height=190, scale=0.42)
-        gema = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.25)
+       
+        quadro_parado = pegar_sprite(CAMINHO_SPRITES, x=10, y=0, width=50, height=50, scale=2.5)
+        quadro_subindo = pegar_sprite(CAMINHO_SPRITES, x=80, y=0, width=50, height=50, scale=2.5)  
+        quadro_descendo = pegar_sprite(CAMINHO_SPRITES, x=180, y=0, width=50, height=50, scale=2.5)
+        
+        sprites_jogador = [quadro_parado, quadro_subindo, quadro_descendo]
+
+        gema = pegar_sprite(CAMINHO_ESTRELA, x=10, y=40, width=250, height=210, scale=0.2)
+
     except pygame.error:
-        jogador = criar_sprite_fallback(70, 70, VERDE)
+        sprites_jogador = [criar_sprite_fallback(70, 70, VERDE) for _ in range(3)]
         gema = criar_sprite_fallback(32, 32, AMARELO)
 
     balao = pygame.Surface((44, 58), pygame.SRCALPHA)
@@ -82,8 +94,24 @@ def carregar_imagens():
     pygame.draw.polygon(balao, VERMELHO, [(20, 43), (25, 43), (22, 50)])
     pygame.draw.line(balao, BRANCO, (22, 50), (22, 58), 2)
 
-    return {"jogador": jogador, "gema": gema, "balao": balao}
+    return {"jogador": sprites_jogador, "gema": gema, "balao": balao}
 
+
+def carregar_fundos():
+    fundos = {}
+    for fase in FASES:
+        caminho = fase.get('imagem_fundo')
+        if caminho and os.path.exists(caminho):
+            try:
+                img = pygame.image.load(caminho).convert()
+                # Redimensiona para caber na tela (mantendo proporção)
+                img = pygame.transform.scale(img, (LARGURA_TELA, ALTURA_TELA))
+                fundos[fase['nome']] = img
+            except pygame.error:
+                fundos[fase['nome']] = None
+        else:
+            fundos[fase['nome']] = None
+    return fundos
 
 def criar_estrelas(quantidade=80):
     estrelas = []
@@ -97,6 +125,33 @@ def criar_estrelas(quantidade=80):
             }
         )
     return estrelas
+
+
+def desenhar_fundo(tela, fundos, config_fase, estrelas=None):
+
+    nome_fase = config_fase['nome']
+    imagem = fundos.get(nome_fase)
+
+    if imagem is not None:
+        tela.blit(imagem, (0, 0))
+   
+        if estrelas:
+            for estrela in estrelas:
+                estrela["y"] += estrela["velocidade"]
+                if estrela["y"] > ALTURA_TELA:
+                    estrela["x"] = random.randrange(0, LARGURA_TELA)
+                    estrela["y"] = 0
+                pygame.draw.circle(tela, (255,255,255,100), (int(estrela["x"]), int(estrela["y"])), estrela["raio"])
+    else:
+        tela.fill(config_fase['cor_fundo'])
+        if estrelas:
+            for estrela in estrelas:
+                estrela["y"] += estrela["velocidade"]
+                if estrela["y"] > ALTURA_TELA:
+                    estrela["x"] = random.randrange(0, LARGURA_TELA)
+                    estrela["y"] = 0
+                pygame.draw.circle(tela, BRANCO, (int(estrela["x"]), int(estrela["y"])), estrela["raio"])
+
 
 
 def criar_plataforma(andar, y, x=None):
@@ -119,17 +174,20 @@ def criar_partida(imagens):
         x = (LARGURA_TELA - LARGURA_PLATAFORMA) // 2 if andar == 0 else None
         plataformas.append(criar_plataforma(andar, y, x))
 
-    jogador_rect = imagens["jogador"].get_rect()
+    sprite_parado = imagens["jogador"][0]
+    jogador_rect = sprite_parado.get_rect()
     jogador_rect.midbottom = plataformas[0]["rect"].midtop
 
     return {
         "jogador": {
-            "imagem": imagens["jogador"],
+           "sprites": imagens["jogador"],    
+            "indice_sprite": 0,               
             "rect": jogador_rect,
             "x": float(jogador_rect.x),
             "y": float(jogador_rect.y),
             "vel_y": IMPULSO_PULO,
             "invulneravel": 0,
+            "no_chao": True,   
         },
         "plataformas": plataformas,
         "obstaculos": obstaculos,
@@ -142,6 +200,13 @@ def criar_partida(imagens):
         "inicio_ticks": pygame.time.get_ticks(),
         "mensagem": "",
         "resultado_salvo": False,
+        "fase_atual": 0,
+        "config_fase": FASES[0],
+        "transicao": {
+            "ativa": False,
+            "timer": 0,
+            "nome": ""
+        }
     }
 
 
@@ -149,6 +214,7 @@ def gerar_elementos_acima(partida, imagens):
     plataformas = partida["plataformas"]
     top_y = min(plataforma["rect"].y for plataforma in plataformas)
     maior_andar = max(plataforma["andar"] for plataforma in plataformas)
+    config = partida["config_fase"]
 
     while top_y > -120:
         maior_andar += 1
@@ -156,8 +222,10 @@ def gerar_elementos_acima(partida, imagens):
         plataforma = criar_plataforma(maior_andar, top_y)
         plataformas.append(plataforma)
 
-        chance_obstaculo = min(0.18 + maior_andar * 0.004, 0.38)
-        if maior_andar > 2 and random.random() < chance_obstaculo:
+        chance_base = config['chance_obstaculo_base']
+        chance = min(chance_base + maior_andar * 0.004, 0.45)
+
+        if maior_andar > 2 and random.random() < chance:
             rect = imagens["balao"].get_rect()
             rect.x = random.randrange(30, LARGURA_TELA - rect.width - 30)
             rect.y = plataforma["rect"].y - random.randrange(42, 72)
@@ -199,29 +267,33 @@ def finalizar_partida(partida, status, mensagem, recorde):
 def atualizar_partida(partida, imagens, teclas):
     jogador = partida["jogador"]
     rect = jogador["rect"]
+    config = partida["config_fase"]
 
     mouse_x = pygame.mouse.get_pos()[0]
     alvo_x = mouse_x - rect.width / 2
+    vel_h = config['vel_horizontal']
 
     if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
-        jogador["x"] -= VELOCIDADE_HORIZONTAL
+        jogador["x"] -= vel_h
     elif teclas[pygame.K_RIGHT] or teclas[pygame.K_d]:
-        jogador["x"] += VELOCIDADE_HORIZONTAL
+        jogador["x"] += vel_h
     else:
         diferenca = alvo_x - jogador["x"]
-        passo = limitar_valor(diferenca, -VELOCIDADE_HORIZONTAL, VELOCIDADE_HORIZONTAL)
+        passo = limitar_valor(diferenca, -vel_h, vel_h)
         jogador["x"] += passo
 
     jogador["x"] = limitar_valor(jogador["x"], 0, LARGURA_TELA - rect.width)
     rect.x = int(jogador["x"])
 
     fundo_anterior = rect.bottom
-    jogador["vel_y"] += GRAVIDADE
+    jogador["vel_y"] += config['gravidade']
     jogador["y"] += jogador["vel_y"]
     rect.y = int(jogador["y"])
 
     if jogador["invulneravel"] > 0:
         jogador["invulneravel"] -= 1
+
+    jogador["no_chao"] = False
 
     for plataforma in partida["plataformas"]:
         plataforma_rect = plataforma["rect"]
@@ -236,6 +308,7 @@ def atualizar_partida(partida, imagens, teclas):
         rect.bottom = plataforma_rect.top
         jogador["y"] = float(rect.y)
         jogador["vel_y"] = IMPULSO_PULO
+        jogador["no_chao"] = True
 
         andar = plataforma["andar"]
         if andar > partida["maior_andar"]:
@@ -246,6 +319,15 @@ def atualizar_partida(partida, imagens, teclas):
                 PONTOS_POR_ANDAR,
             )
             partida["maior_andar"] = andar
+
+            nova_fase = obter_fase(andar)
+            if nova_fase != config:
+                partida["config_fase"] = nova_fase
+                partida["fase_atual"] = FASES.index(nova_fase)
+                partida["transicao"]["ativa"] = True
+                partida["transicao"]["timer"] = 60
+                partida["transicao"]["nome"] = nova_fase['nome']
+
         elif andar < partida["andar_atual"]:
             partida["pontos"] = penalizar_queda(
                 partida["pontos"],
@@ -264,6 +346,15 @@ def atualizar_partida(partida, imagens, teclas):
         jogador["y"] = float(rect.y)
         mover_cenario(partida, deslocamento)
 
+
+    if not jogador["no_chao"]:
+        if jogador["vel_y"] < 0:
+            jogador["indice_sprite"] = 1  
+        else:
+            jogador["indice_sprite"] = 2   
+    else:
+        jogador["indice_sprite"] = 0           
+
     for gema in partida["gemas"]:
         if not gema["coletada"] and verificar_colisao(rect, gema["rect"]):
             gema["coletada"] = True
@@ -280,19 +371,14 @@ def atualizar_partida(partida, imagens, teclas):
     gerar_elementos_acima(partida, imagens)
     remover_elementos_fora_da_tela(partida)
 
+    if partida["transicao"]["ativa"]:
+        partida["transicao"]["timer"] -= 1
+        if partida["transicao"]["timer"] <= 0:
+            partida["transicao"]["ativa"] = False
 
-def desenhar_fundo(tela, estrelas):
-    tela.fill(AZUL_ESCURO)
-    for estrela in estrelas:
-        estrela["y"] += estrela["velocidade"]
-        if estrela["y"] > ALTURA_TELA:
-            estrela["x"] = random.randrange(0, LARGURA_TELA)
-            estrela["y"] = 0
-        pygame.draw.circle(tela, BRANCO, (int(estrela["x"]), int(estrela["y"])), estrela["raio"])
-
-
-def desenhar_partida(tela, fontes, partida, imagens, recorde, estrelas):
-    desenhar_fundo(tela, estrelas)
+def desenhar_partida(tela, fontes, partida, imagens, recorde, fundos, estrelas):
+    config = partida["config_fase"]
+    desenhar_fundo(tela, fundos, config, estrelas)
 
     for plataforma in partida["plataformas"]:
         cor = VERDE if plataforma["andar"] == partida["andar_atual"] else AZUL_MEDIO
@@ -310,7 +396,10 @@ def desenhar_partida(tela, fontes, partida, imagens, recorde, estrelas):
     jogador = partida["jogador"]
     piscar = jogador["invulneravel"] > 0 and jogador["invulneravel"] % 10 < 5
     if not piscar:
-        tela.blit(jogador["imagem"], jogador["rect"])
+        sprite_atual = jogador["sprites"][jogador["indice_sprite"]]
+        x = jogador["rect"].centerx - sprite_atual.get_width() // 2
+        y = jogador["rect"].bottom - sprite_atual.get_height()
+        tela.blit(sprite_atual, (x, y))
 
     tempo = (pygame.time.get_ticks() - partida["inicio_ticks"]) // 1000
     hud = (
@@ -321,9 +410,18 @@ def desenhar_partida(tela, fontes, partida, imagens, recorde, estrelas):
     desenhar_texto(tela, fontes["pequena"], hud, 16, 14, BRANCO)
     desenhar_texto(tela, fontes["pequena"], "ESC pausa | SPACE pulo duplo | R reinicia", 16, 42, AMARELO)
 
+    if partida["transicao"]["ativa"]:
+        nome = partida["transicao"]["nome"]
+        desenhar_texto(tela, fontes["titulo"], nome, LARGURA_TELA//2, ALTURA_TELA//2 - 50, AMARELO, centro=True)
+        desenhar_texto(tela, fontes["media"], "Nova fase!", LARGURA_TELA//2, ALTURA_TELA//2 + 20, BRANCO, centro=True)
 
-def desenhar_menu(tela, fontes, recorde, ranking, estrelas):
-    desenhar_fundo(tela, estrelas)
+def desenhar_menu(tela, fontes, recorde, ranking, fundos, estrelas):
+    desenhar_fundo(tela, fundos, FASES[0], estrelas)
+
+    overlay = pygame.Surface((LARGURA_TELA, ALTURA_TELA), pygame.SRCALPHA)
+    overlay.fill((40, 40, 40, 170))  
+    tela.blit(overlay, (0, 0))
+
     desenhar_texto(tela, fontes["titulo"], TITULO_JOGO, LARGURA_TELA // 2, 95, AMARELO, centro=True)
     desenhar_texto(
         tela,
@@ -354,8 +452,8 @@ def desenhar_pausa(tela, fontes):
     desenhar_texto(tela, fontes["media"], "ESC continua | R reinicia | Q sai", LARGURA_TELA // 2, 320, BRANCO, centro=True)
 
 
-def desenhar_fim(tela, fontes, partida, recorde, ranking, estrelas):
-    desenhar_fundo(tela, estrelas)
+def desenhar_fim(tela, fontes, partida, recorde, ranking, fundos, estrelas):
+    desenhar_fundo(tela, fundos, FASES[0], estrelas)
     desenhar_texto(tela, fontes["titulo"], partida["mensagem"], LARGURA_TELA // 2, 110, AMARELO, centro=True)
     desenhar_texto(tela, fontes["media"], f"Pontuacao final: {partida['pontos']}", LARGURA_TELA // 2, 180, BRANCO, centro=True)
     desenhar_texto(tela, fontes["media"], f"Maior andar: {partida['maior_andar']} | Recorde: {recorde}", LARGURA_TELA // 2, 220, VERDE, centro=True)
@@ -368,7 +466,6 @@ def desenhar_fim(tela, fontes, partida, recorde, ranking, estrelas):
 
 
 def executar_jogo():
-    """Executa o loop principal do jogo."""
     pygame.init()
 
     tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
@@ -381,6 +478,7 @@ def executar_jogo():
         "pequena": pygame.font.Font(None, 24),
     }
     imagens = carregar_imagens()
+    fundos = carregar_fundos()    
     estrelas = criar_estrelas()
 
     recorde = carregar_recorde(CAMINHO_RECORDE)
@@ -452,15 +550,19 @@ def executar_jogo():
 
         if estado == "menu":
             ranking = carregar_ranking(CAMINHO_RANKING)
-            desenhar_menu(tela, fontes, recorde, ranking, estrelas)
+            desenhar_menu(tela, fontes, recorde, ranking, fundos, estrelas)
         elif estado == "jogando":
-            desenhar_partida(tela, fontes, partida, imagens, recorde, estrelas)
+            desenhar_partida(tela, fontes, partida, imagens, recorde, fundos, estrelas)
         elif estado == "pausado":
-            desenhar_partida(tela, fontes, partida, imagens, recorde, estrelas)
+            desenhar_partida(tela, fontes, partida, imagens, recorde, fundos, estrelas)
             desenhar_pausa(tela, fontes)
         elif estado == "fim":
-            desenhar_fim(tela, fontes, partida, recorde, ranking, estrelas)
+            desenhar_fim(tela, fontes, partida, recorde, ranking, fundos, estrelas)
 
         pygame.display.flip()
 
     pygame.quit()
+
+
+if __name__ == "__main__":
+    executar_jogo()
